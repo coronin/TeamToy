@@ -13,13 +13,7 @@ class dashboardController extends appController
 	function index()
 	{
 		$data['title'] = $data['top_title'] = 'TODO';
-		return render( $data , 'web' , 'card' );
-	}
-
-	function about()
-	{
-		$data['title'] = $data['top_title'] = __('TEAMTOY_ABOUT');
-		return render( $data , 'ajax' , 'raw'  );
+		render( $data , 'web' , 'card' );
 	}
 
 	function check_version()
@@ -32,7 +26,7 @@ class dashboardController extends appController
 			return render( array( 'code' => 0 , 'data' => $data['data'] ) , 'rest' );
 		}
 
-		return render( array( 'code' => 100001 , 'message' => __('API_MESSAGE_CANNOT_CONNECT') ) , 'rest' );
+		return render( array( 'code' => 100001 , 'message' => 'can not get api content' ) , 'rest' );
 	}
 
 	function user_reset_password()
@@ -47,7 +41,7 @@ class dashboardController extends appController
 			return render( array( 'code' => 0 , 'data' => $data['data'] ) , 'rest' );
 		}
 
-		return render( array( 'code' => 100001 , 'message' => __('API_MESSAGE_CANNOT_CONNECT') ) , 'rest' );
+		return render( array( 'code' => 100001 , 'message' => 'can not get api content' ) , 'rest' );
 	}
 
 	function user_tooltips()
@@ -60,7 +54,7 @@ class dashboardController extends appController
 		{
 			$data = json_decode($content , 1);
 			if( intval($data['err_code']) != 0 ) 
-				return ajax_echo( __('DATA_LOAD_ERROR') );
+				return ajax_echo( '数据载入失败，请稍后再试' );
 			else
 				return render( $data , 'ajax' , 'raw'  );
 		}
@@ -107,13 +101,13 @@ PRIMARY KEY (  `folder_name` )
 		run_sql( $sql );
 		
 		
-		return info_page( __('DB_UPGRADE_SUCCESS') );	
+		return info_page('更新完成，请<a href="?c=dashboard">用力刷新页面以保证新代码正常工作</a>');	
 		
 	}
 
 	function upgrade()
 	{
-		if(!is_admin()) return info_page( __('CODE_UPGRADE_ONLY_ADMIN') );
+		if(!is_admin()) return info_page( '只有管理员才能进行升级' );
 
 		$params = array();
 		if($content = send_request( 'upgrade' ,  $params , token()  ))
@@ -122,20 +116,20 @@ PRIMARY KEY (  `folder_name` )
 			if( intval($data['err_code']) != 0 )
 			{
 				if( $data['err_code'] == '10011' )
-					return info_page( __('CODE_UPGRADE_ALREADY_LATEST') );
+					return info_page( '已经是最新版本' );
 				else
-					return info_page( __('CODE_UPGRADE_ERROR') );
+					return info_page( '升级失败，请稍后再试' );
 			} 
 			else
 			{
 				if( $data['data']['pscript'] )
-					return info_page(  __( 'CODE_UPGRADE_SUCCESS_DB_UPGRADE' , $data['data']['pscript'] ) );
+					return info_page( '代码更新成功，请<a href="' . $data['data']['pscript'] . '">点击这里升级数据表</a>' );
 				else	
-					return info_page( __('CODE_UPGRADE_SUCCESS') );
+					return info_page( '成功更新，请<a href="/">用力刷新页面以保证新代码正常工作</a>' );
 			}
 				
 		}
-		return info_page( __('CODE_UPGRADE_CANNOT_CONNECT') );
+		return info_page( '联网失败，请稍后再试' );
 	}
 
 	function get_fresh_chat()
@@ -160,77 +154,17 @@ PRIMARY KEY (  `folder_name` )
 		return null;
 	}
 
-	function im_all_json()
-	{
-		$params = array();
-		$params['max_id'] = intval(v('max_id'));
-		$params['word'] = z(t(v('keyword')));
-		$params['read_all'] = 1;
-		$params['count'] = 100;
-
-		if($content = send_request( 'im_history' ,  $params , token()  ))
-		{
-			$data = json_decode($content , 1);
-			if( $data['err_code'] == 0 )
-			{
-				$data['data']['items'] = array_reverse($data['data']['items']);
-				return render( 
-				array( 	'code' => 0 , 
-						'data' =>  
-							array( 	'min'=> $data['data']['min'],
-									'more' => $data['data']['more'],
-									'html' => render_html( 
-										array(	'data' => $data['data'] ) , 
-										AROOT . 'view' . DS . 'layout' . DS . 'ajax' . DS . 'widget' . DS . 'im_history_large.tpl.html'  
-										) 
-								)) , 'rest' );
-			}
-			else
-				return render( array( 'code' => 100002 , 'message' => __('API_MESSAGE_SAVE_DATA_ERROR') ) , 'rest' );
-		}	
-	}
-
-
-	function im_all()
-	{
-		$params = array();
-		$params['max_id'] = intval(v('max_id'));
-		$params['word'] = z(t(v('keyword')));
-		$params['uid'] = intval(v('uid'));
-		$params['read_all'] = 1;
-		$params['count'] = 100;
-
-
-		if($content = send_request( 'im_history' ,  $params , token()  ))
-		{
-			$data = json_decode($content , 1);
-			if( intval($data['err_code']) != 0 && intval($data['err_code']) != LR_API_DB_EMPTY_RESULT ) 
-				return ajax_echo(__('DATA_LOAD_ERROR'));
-
-			if( isset( $data['data']['items'] ) )
-			 $data['data']['items'] = array_reverse($data['data']['items']);
-			
-			return render( $data , 'ajax' , 'raw'  );
-
-		}
-
-		return info_page(__('DATA_LOAD_ERROR'));
-	}
-
-
 	function im_history()
 	{
 		$params = array();
 		$params['max_id'] = intval(v('max_id'));
 		$params['since_id'] = intval(v('since_id'));
-		$params['uid'] = intval(v('uid'));
 		
 		// mark all chat as read so we can list it in "history"
 		$content = send_request( 'get_fresh_chat' ,  $params , token() );
 		if($content = send_request( 'im_history' ,  $params , token()  ))
 		{
 			$data = json_decode($content , 1);
-			//print_r( $data );
 			if( intval($data['err_code']) != 0 ) 
 				return false;
 
@@ -247,10 +181,10 @@ PRIMARY KEY (  `folder_name` )
 	function im_send()
 	{
 		$uid = intval(v('uid'));
-		if( $uid< 1 ) return  render( array( 'code' => 100002 , 'message' => __('INPUT_CHECK_BAD_ARGS' , 'UID' )  ) , 'rest' );
+		if( $uid< 1 ) return  render( array( 'code' => 100002 , 'message' => 'bad args,uid required' ) , 'rest' );
 		
 		$text = z(t(v('text')));
-		if( strlen($text) < 1 ) return  render( array( 'code' => 100002 , 'message' => __('INPUT_CHECK_BAD_ARGS' , 'TEXT') ) , 'rest' );
+		if( strlen($text) < 1 ) return  render( array( 'code' => 100002 , 'message' => 'bad args,text required' ) , 'rest' );
 		
 		$params = array();
 		$params['uid'] = $uid;
@@ -268,7 +202,7 @@ PRIMARY KEY (  `folder_name` )
 				return render( array( 'code' => $data['err_code'] , 'message' => $data['err_msg'] ) , 'rest' );
 		}
 
-		return render( array( 'code' => 100001 , 'message' => __('API_MESSAGE_CANNOT_CONNECT') ) , 'rest' );
+		return render( array( 'code' => 100001 , 'message' => 'can not get api content' ) , 'rest' );
   
 	}
 
@@ -285,7 +219,7 @@ PRIMARY KEY (  `folder_name` )
 						. DS . 'layout' . DS . 'ajax' . DS . 'widget' . DS . 'im.tpl.html'  ) ) ) , 'rest' );
 			}
 			else
-				return render( array( 'code' => 100002 , 'message' => __('API_MESSAGE_SAVE_DATA_ERROR') ) , 'rest' );
+				return render( array( 'code' => 100002 , 'message' => 'can not save data' ) , 'rest' );
 		}
 	}
 
@@ -303,7 +237,7 @@ PRIMARY KEY (  `folder_name` )
 						. DS . 'layout' . DS . 'ajax' . DS . 'widget' . DS . 'imbox.tpl.html'  ) ) ) , 'rest' );
 			}
 			else
-				return render( array( 'code' => 100002 , 'message' => __('API_MESSAGE_SAVE_DATA_ERROR') ) , 'rest' );
+				return render( array( 'code' => 100002 , 'message' => 'can not save data' ) , 'rest' );
 		}
 	}
 
@@ -318,7 +252,7 @@ PRIMARY KEY (  `folder_name` )
 		{
 			$data = json_decode($content , 1);
 			if( intval($data['err_code']) != 0 ) 
-				return ajax_echo( __('DATA_LOAD_ERROR') );
+				return ajax_echo( '数据载入失败，请稍后再试' );
 			else
 				return render( $data , 'ajax' , 'raw'  );
 		}
@@ -339,7 +273,7 @@ PRIMARY KEY (  `folder_name` )
 	
 	
 		if( $_FILES['ufile']['error'] != 0 )
-			return info_page(__('AVATAR_UPLOAD_ERROR'));
+			return info_page('文件上传错误，请重新上传');
 		
 		if( $w == 0 || $h == 0 )
 		{
@@ -350,11 +284,9 @@ PRIMARY KEY (  `folder_name` )
 			// do crop
 			$src = $_FILES['ufile']['tmp_name'];
 
-			list($width, $height, $type, $attr)=getimagesize($src); 
-
-			if( $type == IMAGETYPE_PNG )
+			if( $_FILES['ufile']['type'] == 'image/png' )
 				$img_r = imagecreatefrompng($src);
-			elseif( $type== IMAGETYPE_GIF )
+			elseif( $_FILES['ufile']['type'] == 'image/gif' )
 				$img_r = ImageCreateFromGIF($src);
 			else
 				$img_r = imagecreatefromjpeg($src);
@@ -378,12 +310,10 @@ PRIMARY KEY (  `folder_name` )
 		{
 			$data = json_decode($content , 1);
 			if( $data['err_code'] == 0 )
-				return info_page( __('AVATAR_UPDATE_SUCCESS') );
+				return info_page('<a href="?c=buddy">头像更新成功，由于浏览器缓存的关系，您可能看到的还是旧头像，可强制刷新或清空缓存。</a>' );
 			else
-				return info_page( __('AVATAR_UPDATE_ERROR') , array( $data['err_code'] , $data['err_msg'] ) );
+				return info_page('头像更新失败，错误码-'.$data['err_code'].'，错误信息-'.$data['err_msg']);
 		}
-
-		return info_page( __('AVATAR_UPDATE_SUCCESS') );
 	}
 
 	function password()
@@ -394,10 +324,10 @@ PRIMARY KEY (  `folder_name` )
 	function update_password()
 	{
 		$opassword = z(t(v('oldpassword')));
-		if( strlen($opassword) < 1 ) return  render( array( 'code' => 100002 , 'message' => __('INPUT_CHECK_NO_OLDPASS') ) , 'rest' );
+		if( strlen($opassword) < 1 ) return  render( array( 'code' => 100002 , 'message' => 'bad args,old password required' ) , 'rest' );
 		
 		$password = z(t(v('newpassword')));
-		if( strlen($password) < 1 ) return  render( array( 'code' => 100002 , 'message' => __('INPUT_CHECK_NO_NEWPASS') ) , 'rest' );
+		if( strlen($password) < 1 ) return  render( array( 'code' => 100002 , 'message' => 'bad args,new password required' ) , 'rest' );
 		
 
 		$params = array();
@@ -414,7 +344,7 @@ PRIMARY KEY (  `folder_name` )
 				return render( array( 'code' => $data['err_code'] , 'message' => $data['err_msg'] ) , 'rest' );
 		}
 
-		return render( array( 'code' => 100001 , 'message' => __('API_MESSAGE_CANNOT_CONNECT') ) , 'rest' );
+		return render( array( 'code' => 100001 , 'message' => 'can not get api content' ) , 'rest' );
 	}
 
 
@@ -422,10 +352,10 @@ PRIMARY KEY (  `folder_name` )
 	function update_profile()
 	{
 		$email = z(t(v('email')));
-		if( strlen($email) < 1 ) return  render( array( 'code' => 100002 , 'message' => __('INPUT_CHECK_BAD_ARGS' , 'EMAIL' ) ) , 'rest' );
+		if( strlen($email) < 1 ) return  render( array( 'code' => 100002 , 'message' => 'bad args,email required' ) , 'rest' );
 		
 		$mobile = z(t(v('mobile')));
-		if( strlen($mobile) < 1 ) return  render( array( 'code' => 100002 , 'message' => __('INPUT_CHECK_BAD_ARGS' , 'MOBILE' ) ) , 'rest' );
+		if( strlen($mobile) < 1 ) return  render( array( 'code' => 100002 , 'message' => 'bad args,mobile required' ) , 'rest' );
 		
 
 		$params = array();
@@ -444,7 +374,7 @@ PRIMARY KEY (  `folder_name` )
 			return render( array( 'code' => 0 , 'data' => $data['data'] ) , 'rest' );
 		}
 
-		return render( array( 'code' => 100001 , 'message' => __('API_MESSAGE_CANNOT_CONNECT') ) , 'rest' );
+		return render( array( 'code' => 100001 , 'message' => 'can not get api content' ) , 'rest' );
 	}
 
 	function user_unread()
@@ -457,7 +387,7 @@ PRIMARY KEY (  `folder_name` )
 			return render( array( 'code' => 0 , 'data' => $data['data'] ) , 'rest' );
 		}
 
-		return render( array( 'code' => 100001 , 'message' => __('API_MESSAGE_CANNOT_CONNECT') ) , 'rest' );
+		return render( array( 'code' => 100001 , 'message' => 'can not get api content' ) , 'rest' );
 	}
 
 	function user_online()
@@ -470,7 +400,7 @@ PRIMARY KEY (  `folder_name` )
 			return render( array( 'code' => 0 , 'data' => $data['data'] ) , 'rest' );
 		}
 
-		return render( array( 'code' => 100001 , 'message' => __('API_MESSAGE_CANNOT_CONNECT') ) , 'rest' );
+		return render( array( 'code' => 100001 , 'message' => 'can not get api content' ) , 'rest' );
 	}
 
 	function people_box()
@@ -482,7 +412,7 @@ PRIMARY KEY (  `folder_name` )
 		{
 			$data = json_decode($content , 1);
 			if( intval($data['err_code']) != 0 ) 
-				return ajax_echo( __('DATA_LOAD_ERROR') );
+				return ajax_echo( '数据载入失败，请稍后再试' );
 			else
 			{
 				$data['tid'] = intval(v('tid'));
@@ -496,10 +426,10 @@ PRIMARY KEY (  `folder_name` )
 	function todo_edit()
 	{
 		$tid = intval(v('tid'));
-		if( $tid < 1 ) return ajax_echo( __('INPUT_CHECK_BAD_ARGS' , 'TID' ) );
+		if( $tid < 1 ) return ajax_echo('错误的TID，请点击左侧TODO重新载入后重试');
 
 		$text = z(t(v('text')));
-		if( strlen($text) < 1 ) return ajax_echo( __('INPUT_CHECK_NO_TODO_TITLE') );
+		if( strlen($text) < 1 ) return ajax_echo('错误的TODO标题，请点击左侧TODO重新载入后重试');
 
 		$data['tid'] = $tid;
 		$data['text'] = $text;
@@ -512,10 +442,10 @@ PRIMARY KEY (  `folder_name` )
 	{
 		// todo_assign
 		$tid = intval(v('tid'));
-		if( $tid < 1 ) return render( array( 'code' => 100002 , 'message' => __('INPUT_CHECK_BAD_ARGS' , 'TID' ) ) , 'rest' );
+		if( $tid < 1 ) return render( array( 'code' => 100002 , 'message' => 'bad args' ) , 'rest' );
 		
 		$uid = intval(v('uid'));
-		if( $uid < 1 ) return render( array( 'code' => 100002 , 'message' => __('INPUT_CHECK_BAD_ARGS' , 'UID' ) ) , 'rest' );
+		if( $uid < 1 ) return render( array( 'code' => 100002 , 'message' => 'bad args' ) , 'rest' );
 
 		$params = array();
 		$params['tid'] = $tid;
@@ -527,31 +457,10 @@ PRIMARY KEY (  `folder_name` )
 			return render( array( 'code' => 0 , 'data' => $data['data'] ) , 'rest' );
 		}
 
-		return render( array( 'code' => 100001 , 'message' => __('API_MESSAGE_CANNOT_CONNECT') ) , 'rest' );
+		return render( array( 'code' => 100001 , 'message' => 'can not get api content' ) , 'rest' );
 
 
 
-
-	}
-
-	function todo_center()
-	{
-		$tid = intval(v('tid'));
-		if( $tid < 1 ) return info_page();
-
-		$params = array();
-		$params['tid'] = $tid;
-		
-		if($content = send_request( 'todo_detail' ,  $params , token()  ))
-		{
-			$data = json_decode($content , 1);
-			if( intval($data['err_code']) != 0 ) 
-				return false;
-			else
-				return render( $data , 'ajax' , 'raw'  );
-		}
-
-		return info_page( __('TODO_LOAD_ERROR') );
 
 	}
 
@@ -560,7 +469,7 @@ PRIMARY KEY (  `folder_name` )
 
 		//return ajax_echo( print_r( $_REQUEST , 1 ) );
 		$tid = intval(v('tid'));
-		if( $tid < 1 ) return info_page(__('INPUT_CHECK_BAD_ARGS' , 'TID' ));
+		if( $tid < 1 ) return info_page('加载todo失败，请重试');
 
 		$params = array();
 		$params['tid'] = $tid;
@@ -574,7 +483,7 @@ PRIMARY KEY (  `folder_name` )
 				return render( $data , 'ajax' , 'raw'  );
 		}
 
-		return info_page(__('TODO_LOAD_ERROR'));
+		return info_page('加载todo失败，请重试');
 
 		
 	}
@@ -582,7 +491,7 @@ PRIMARY KEY (  `folder_name` )
 	function todo_start()
 	{
 		$tid = intval(v('tid'));
-		if( $tid < 1 ) return render( array( 'code' => 100002 , 'message' => __('INPUT_CHECK_BAD_ARGS' , 'TID' ) ) , 'rest' );
+		if( $tid < 1 ) return render( array( 'code' => 100002 , 'message' => 'bad args' ) , 'rest' );
 		
 		if( t(v('type')) == 'pause' ) $action = 'todo_pause';
 		else $action = 'todo_start';
@@ -596,14 +505,14 @@ PRIMARY KEY (  `folder_name` )
 			return render( array( 'code' => 0 , 'data' => $data['data'] ) , 'rest' );
 		}
 
-		return render( array( 'code' => 100001 , 'message' => __('API_MESSAGE_CANNOT_CONNECT') ) , 'rest' );
+		return render( array( 'code' => 100001 , 'message' => 'can not get api content' ) , 'rest' );
 
 	}
 
 	function todo_public()
 	{
 		$tid = intval(v('tid'));
-		if( $tid < 1 ) return render( array( 'code' => 100002 , 'message' => __('INPUT_CHECK_BAD_ARGS' , 'TID' ) ) , 'rest' );
+		if( $tid < 1 ) return render( array( 'code' => 100002 , 'message' => 'bad args' ) , 'rest' );
 		
 		if( t(v('type')) == 'private' ) $action = 'todo_private';
 		else $action = 'todo_public';
@@ -617,14 +526,14 @@ PRIMARY KEY (  `folder_name` )
 			return render( array( 'code' => 0 , 'data' => $data['data'] ) , 'rest' );
 		}
 
-		return render( array( 'code' => 100001 , 'message' => __('API_MESSAGE_CANNOT_CONNECT') ) , 'rest' );
+		return render( array( 'code' => 100001 , 'message' => 'can not get api content' ) , 'rest' );
 
 	}
 
 	function todo_star()
 	{
 		$tid = intval(v('tid'));
-		if( $tid < 1 ) return render( array( 'code' => 100002 , 'message' => __('INPUT_CHECK_BAD_ARGS' , 'TID' ) ) , 'rest' );
+		if( $tid < 1 ) return render( array( 'code' => 100002 , 'message' => 'bad args' ) , 'rest' );
 		
 		if( t(v('type')) == 'remove' ) $action = 'todo_unstar';
 		else $action = 'todo_star';
@@ -638,13 +547,13 @@ PRIMARY KEY (  `folder_name` )
 			return render( array( 'code' => 0 , 'data' => $data['data'] ) , 'rest' );
 		}
 
-		return render( array( 'code' => 100001 , 'message' => __('API_MESSAGE_CANNOT_CONNECT') ) , 'rest' );
+		return render( array( 'code' => 100001 , 'message' => 'can not get api content' ) , 'rest' );
 	}
 
 	function todo_follow()
 	{
 		$tid = intval(v('tid'));
-		if( $tid < 1 ) return render( array( 'code' => 100002 , 'message' => __('INPUT_CHECK_BAD_ARGS' , 'TID' ) ) , 'rest' );
+		if( $tid < 1 ) return render( array( 'code' => 100002 , 'message' => 'bad args' ) , 'rest' );
 
 		$params = array();
 		$params['tid'] = $tid;
@@ -658,13 +567,13 @@ PRIMARY KEY (  `folder_name` )
 			return render( array( 'code' => 0 , 'data' => $data['data'] ) , 'rest' );
 		}
 
-		return render( array( 'code' => 100001 , 'message' => __('API_MESSAGE_CANNOT_CONNECT') ) , 'rest' );
+		return render( array( 'code' => 100001 , 'message' => 'can not get api content' ) , 'rest' );
 	}
 
 	function todo_done()
 	{
 		$tid = intval(v('tid'));
-		if( $tid < 1 ) return render( array( 'code' => 100002 , 'message' => __('INPUT_CHECK_BAD_ARGS' , 'TID' ) ) , 'rest' );
+		if( $tid < 1 ) return render( array( 'code' => 100002 , 'message' => 'bad args' ) , 'rest' );
 
 		$params = array();
 		$params['tid'] = $tid;
@@ -678,7 +587,7 @@ PRIMARY KEY (  `folder_name` )
 			return render( array( 'code' => 0 , 'data' => $data['data'] ) , 'rest' );
 		}
 
-		return render( array( 'code' => 100001 , 'message' => __('API_MESSAGE_CANNOT_CONNECT') ) , 'rest' );
+		return render( array( 'code' => 100001 , 'message' => 'can not get api content' ) , 'rest' );
 	}
 
 	function todo_reopen()
@@ -690,7 +599,7 @@ PRIMARY KEY (  `folder_name` )
 	function todo_remove_comment()
 	{
 		$hid = intval(v('hid'));
-		if( $hid < 1 ) return render( array( 'code' => 100002 , 'message' => __('INPUT_CHECK_BAD_ARGS' , 'TID' ) ) , 'rest' );
+		if( $hid < 1 ) return render( array( 'code' => 100002 , 'message' => 'bad args' ) , 'rest' );
 
 		$params = array();
 		$params['hid'] = $hid;
@@ -703,11 +612,11 @@ PRIMARY KEY (  `folder_name` )
 				return render( array( 'code' => 0 , 'data' => $data['data']) , 'rest' );
 			}
 			else
-				return render( array( 'code' => 100002 , 'message' => __('API_MESSAGE_SAVE_DATA_ERROR') ) , 'rest' );
+				return render( array( 'code' => 100002 , 'message' => 'can not save data' ) , 'rest' );
 			//return render( array( 'code' => 0 , 'data' => $data['data'] ) , 'rest' );
 		}
 
-		return render( array( 'code' => 100001 , 'message' => __('API_MESSAGE_CANNOT_CONNECT') ) , 'rest' );
+		return render( array( 'code' => 100001 , 'message' => 'can not get api content' ) , 'rest' );
 
 	}
 
@@ -723,10 +632,10 @@ PRIMARY KEY (  `folder_name` )
 				return render( array( 'code' => 0 , 'data' => $data['data']) , 'rest' );
 			}
 			else
-				return render( array( 'code' => 100002 , 'message' => __('API_MESSAGE_SAVE_DATA_ERROR') ) , 'rest' );
+				return render( array( 'code' => 100002 , 'message' => 'can not save data' ) , 'rest' );
 		}
 
-		return render( array( 'code' => 100001 , 'message' => __('API_MESSAGE_CANNOT_CONNECT') ) , 'rest' );
+		return render( array( 'code' => 100001 , 'message' => 'can not get api content' ) , 'rest' );
 	}
 
 	function todo_clean()
@@ -741,19 +650,19 @@ PRIMARY KEY (  `folder_name` )
 				return render( array( 'code' => 0 , 'data' => $data['data']) , 'rest' );
 			}
 			else
-				return render( array( 'code' => 100002 , 'message' => __('API_MESSAGE_SAVE_DATA_ERROR') ) , 'rest' );
+				return render( array( 'code' => 100002 , 'message' => 'can not save data' ) , 'rest' );
 		}
 
-		return render( array( 'code' => 100001 , 'message' => __('API_MESSAGE_CANNOT_CONNECT') ) , 'rest' );
+		return render( array( 'code' => 100001 , 'message' => 'can not get api content' ) , 'rest' );
 	}
 
 	function todo_add_comment()
 	{
 		$text = z(t(v('text')));
-		if( strlen( $text ) < 1 ) return render( array( 'code' => 100002 , 'message' => __('INPUT_CHECK_BAD_ARGS' , 'TEXT' ) ) , 'rest' );
+		if( strlen( $text ) < 1 ) return render( array( 'code' => 100002 , 'message' => 'bad args' ) , 'rest' );
 
 		$tid = intval(v('tid'));
-		if( $tid < 1 ) return render( array( 'code' => 100002 , 'message' => __('INPUT_CHECK_BAD_ARGS' , 'TID' ) ) , 'rest' );
+		if( $tid < 1 ) return render( array( 'code' => 100002 , 'message' => 'bad args' ) , 'rest' );
 
 		$params = array();
 		$params['text'] = $text;
@@ -768,20 +677,20 @@ PRIMARY KEY (  `folder_name` )
 						. DS . 'layout' . DS . 'ajax' . DS . 'widget' . DS . 'history.tpl.html'  ) ) ) , 'rest' );
 			}
 			else
-				return render( array( 'code' => 100002 , 'message' => __('API_MESSAGE_SAVE_DATA_ERROR') ) , 'rest' );
+				return render( array( 'code' => 100002 , 'message' => 'can not save data' ) , 'rest' );
 			//return render( array( 'code' => 0 , 'data' => $data['data'] ) , 'rest' );
 		}
 
-		return render( array( 'code' => 100001 , 'message' => __('API_MESSAGE_CANNOT_CONNECT') ) , 'rest' );
+		return render( array( 'code' => 100001 , 'message' => 'can not get api content' ) , 'rest' );
 	}
 
 	function todo_update()
 	{
 		$text = z(t(v('text')));
-		if( strlen( $text ) < 1 ) render( array( 'code' => 100002 , 'message' => __('INPUT_CHECK_BAD_ARGS' , 'TEXT' ) ) , 'rest' );
+		if( strlen( $text ) < 1 ) render( array( 'code' => 100002 , 'message' => 'bad args' ) , 'rest' );
 
 		$tid = intval(v('tid'));
-		if( $tid < 1 ) return render( array( 'code' => 100002 , 'message' => __('INPUT_CHECK_BAD_ARGS' , 'TID' ) ) , 'rest' );
+		if( $tid < 1 ) return render( array( 'code' => 100002 , 'message' => 'bad args' ) , 'rest' );
 
 		$params = array();
 		$params['text'] = $text;
@@ -797,18 +706,18 @@ PRIMARY KEY (  `folder_name` )
 						. DS . 'layout' . DS . 'ajax' . DS . 'widget' . DS . 'todo.tpl.html'  ) ) ) , 'rest' );
 			}
 			else
-				return render( array( 'code' => 100002 , 'message' => __('API_MESSAGE_SAVE_DATA_ERROR') ) , 'rest' );
+				return render( array( 'code' => 100002 , 'message' => 'can not save data' ) , 'rest' );
 			//return render( array( 'code' => 0 , 'data' => $data['data'] ) , 'rest' );
 		}
 
-		return render( array( 'code' => 100001 , 'message' => __('API_MESSAGE_CANNOT_CONNECT') ) , 'rest' );
+		return render( array( 'code' => 100001 , 'message' => 'can not get api content' ) , 'rest' );
 
 	}
 
 	function todo_add()
 	{
 		$text = z(t(v('text')));
-		if( strlen( $text ) < 1 ) render( array( 'code' => 100002 , 'message' => __('INPUT_CHECK_BAD_ARGS' , 'TEXT' ) ) , 'rest' );
+		if( strlen( $text ) < 1 ) render( array( 'code' => 100002 , 'message' => 'bad args' ) , 'rest' );
 
 		$params = array();
 		$params['text'] = $text;
@@ -833,11 +742,11 @@ PRIMARY KEY (  `folder_name` )
 						. DS . 'layout' . DS . 'ajax' . DS . 'widget' . DS . 'todo.tpl.html' ) , 'other' => intval($data['data']['other'])   ) ) , 'rest' );
 			}
 			else
-				return render( array( 'code' => 100002 , 'message' => __('API_MESSAGE_SAVE_DATA_ERROR') ) , 'rest' );
+				return render( array( 'code' => 100002 , 'message' => 'can not save data' ) , 'rest' );
 			//return render( array( 'code' => 0 , 'data' => $data['data'] ) , 'rest' );
 		}
 
-		return render( array( 'code' => 100001 , 'message' => __('API_MESSAGE_CANNOT_CONNECT') ) , 'rest' );
+		return render( array( 'code' => 100001 , 'message' => 'can not get api content' ) , 'rest' );
 
 	}
 
@@ -881,4 +790,10 @@ PRIMARY KEY (  `folder_name` )
 				
 	}
 	
+	
+
+	function feed()
+	{
+		// aoi created it
+	}
 }

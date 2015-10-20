@@ -5,14 +5,6 @@ if( !defined('SAE_TMP_PATH') )
     define('SAE_TMP_PATH', AROOT . DS . 'tmp' . DS );
 }
 
-function my_sql( $sql )
-{
-    if( function_exists('mysqli_connect') )
-        return mysqli_query( db() , $sql  );
-    else
-        return mysql_query( $sql , db()  ); 
-}
-
 function not_empty( $str )
 {
 	return strlen( $str ) > 0;
@@ -38,7 +30,7 @@ function is_online( $uid )
 function is_installed()
 {
     if( !db()) return false;
-    return my_sql("SHOW COLUMNS FROM `user`");
+    return mysql_query("SHOW COLUMNS FROM `user`",db());
 }
 
 function kset( $key , $value )
@@ -81,7 +73,7 @@ function db_init()
 
     if(  db_errno() == 0 )
     {
-        info_page(__('DATABASE_INIT_FINISHED' , $password ));
+        info_page('数据库初始化成功，请使用【member@teamtoy.net】和【' . $password . '】<a href="/" target="new">登入并添加用户</a>');
         exit;
     }
     else
@@ -191,8 +183,8 @@ function avatar( $url )
 function ctime( $timeline )
 {
     $time = strtotime($timeline);
-    if( time() > ($time+60*60*24*300) )return date( __('DATE_FULL_FORMAT') ,$time);
-    elseif( time() > ($time+60*60*8) ) return date( __('DATE_SHORT_FORMAT') ,$time);
+    if( time() > ($time+60*60*24*300) )return date("Y年n月j日 H:i",$time);
+    elseif( time() > ($time+60*60*8) ) return date("n月j日 H:i",$time);
     else return date("H:i:s",$time);
 }
 
@@ -203,17 +195,15 @@ function rtime( $timeline )
 }
 */
 
-function rtime( $time = false, $limit = 86400, $format = null) 
+function rtime( $time = false, $limit = 86400, $format = 'm月d日 H点i分') 
 {
-	if( $format === null ) $format = __('DATE_SHORT_FORMAT');
-
-    $time = strtotime($time);
+	$time = strtotime($time);
 
 	$now = time();
 	$relative = '';
 
-	if ($time === $now) $relative = __('DATE_RELATED_NOW');
-	elseif ($time > $now) $relative = __('DATE_RELATED_AFTER') ;
+	if ($time === $now) $relative = '刚刚';
+	elseif ($time > $now) $relative = '以后';
 	else 
 	{
 		$diff = $now - $time;
@@ -222,20 +212,16 @@ function rtime( $time = false, $limit = 86400, $format = null)
 
 		elseif ($diff < 60) 
 		{
-			$relative = __('DATE_RELATED_LESS_THAN_A_MINUTE');
+			$relative = '不到一分钟';
 		}
 		elseif (($minutes = ceil($diff/60)) < 60)
 		{
-			if( (int)$minutes === 1 ) $relative = __( 'DATE_RELATED_ONE_MINUTE' );
-            else  $relative = __( 'DATE_RELATED_SOME_MINUTES' ,  $minutes );      
+			$relative = $minutes.'分钟'.(((int)$minutes === 1) ? '' : '').'前';
 		}
 		else
 		{
 			$hours = ceil($diff/3600);
-
-            if( (int)$hours === 1 ) $relative = __( 'DATE_RELATED_ONE_HOUR' );
-            else  $relative = __( 'DATE_RELATED_SOME_HOURS' ,  $hours );  
-
+			$relative = $hours.'小时'.(((int)$hours === 1) ? '' : '').'前';
 		}
 	}
 
@@ -295,10 +281,10 @@ function feed_class(  $type )
 
 function device( $type )
 {
-	if( strtolower(t($type)) == 'mobile' )
-		$ret = __('FROM_MOBILE_DEVICE');
+	if( strtolower($type) == 'mobile' )
+		$ret = '<a href="http://teamtoy.net/?c=download&type=mobile" target="_blank">来自移动版</a>';
 	else
-		$ret = __('FROM_WEB_DEVICE');
+		$ret = '<a href="http://teamtoy.net/?c=download&type=web" target="_blank">来自网页版</a>';
 	return $ret;
 }
 
@@ -345,16 +331,13 @@ function send_request( $action , $param , $token = null )
     // local request
     $bake_request = $_REQUEST;
     $_REQUEST['c'] = 'api';
-    $GLOBALS['a'] = $_REQUEST['a'] = $action;
+    $_REQUEST['a'] = $action;
     if( $token !== null )
         $_REQUEST['token'] = $token;
 
     if( (is_array( $param )) && (count($param) > 0) )
         foreach( $param as $key => $value )
-        {
             $_REQUEST[$key] =  $value ;
-        }
-            
 
     $api = new apiController();
     // magic call
@@ -362,7 +345,6 @@ function send_request( $action , $param , $token = null )
     {
         $content = $api->$action();
         $_REQUEST = $bake_request;
-        $GLOBALS['a'] = $_REQUEST['a'];
        
         return $content;
         //if($data = json_decode( $content , 1 ))
@@ -436,11 +418,10 @@ function jpeg_up( $source , $dest )
 
 function upload_as_form( $url , $data )
 {
-    @session_write_close(); 
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    @curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_TIMEOUT, 30);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $data); 
@@ -692,11 +673,6 @@ function get_plugin_info( $content )
     return false;
 }
 
-function ttpassv2( $password , $salt = '' )
-{
-    return substr( md5(md5( $password  ) . 'T!e*a-m^T$o#y' . $salt  ) , 0 , 30 );
-}
-
 // =================================================
 // make mentions
 // =================================================
@@ -732,52 +708,7 @@ function link_at( $str )
     return str_replace( $to_replace , $replace_to , $str );
 }
 
-function find_links( $html )
-{
-    $reg = '/(http[s]*:\/\/([-a-zA-Z0-9@:%~#&_=\+\.\?\/]+?))((\s+)|$)/is';
-    if( preg_match_all( $reg , $html , $out ) )
-    {
-        foreach( $out[0] as $item )
-        {
-            $ret[] = trim($item);
-        }
 
-        $ret = array_unique($ret);
-        return $ret;
-    }
-    return false;
-}
-
-function replace_links( $html )
-{
-    $reg = '/(http[s]*:\/\/([-a-zA-Z0-9@:%~#&_=\+\.\?\/]+?))((\s+)|$)/is';
-    if(  $ret = preg_replace( $reg , "<a href='$1' target='_blank'>$1</a> " , $html ) )
-    {
-        return $ret;
-    }
-    else return $html;
-   
-
-}
-
-function js_i18n( $array )
-{
-    $ret = array();
-    foreach( $array as $key => $value )
-    {
-        if( strtoupper( substr( $key , 0 , 3 ) ) == 'JS_'  )
-            $ret[$key] = $value;
-    }
-    return $ret;
-}
-
-function plugin_append_lang( $lang_array )
-{
-    $c = g('i18n');
-    if( isset( $lang_array[$c] ) )
-        $GLOBALS['language'][$c] 
-    = array_merge( $GLOBALS['language'][$c] , $lang_array[$c] ) ;
-}
 
 
 function array_remove( $value , $array )
@@ -813,7 +744,6 @@ function phpmailer_send_mail(  $to , $subject , $body , $from ,  $host , $port ,
 
     if(!$mail->Send())
     {
-        $GLOBALS['LP_MAILER_ERROR'] = $mail->ErrorInfo;
         //echo $mail->ErrorInfo;
         return false;
     }

@@ -40,11 +40,6 @@
 	margin-bottom: 10px;
 }
 
-#global_footer
-{
-	display: none;
-}
-
 #lp_pop_box
 {
 	position:absolute;
@@ -143,10 +138,7 @@ a:hover
 	margin-right:5px;
 }
 
-a.white
-{
-	color: white!important;
-}
+
 
 
 .line
@@ -163,12 +155,6 @@ a.white
 html,body
 {
 	background: url(../image/tt2.board.bg.png) repeat #F1F1F1;
-	font-family: 'Helvetica Neue', 'Hiragino Sans GB', 'Segoe UI', 'Microsoft Yahei', '微软雅黑', 'Tahoma', 'Arial', 'STHeiti', 'sans-serif';
-}
-
-h1,h2,h3,h4,h5,h6
-{
-	font-weight: normal;
 }
 
 .hero-unit
@@ -304,7 +290,7 @@ h2.loading
 h2.side_board 
 {
 	font-size:20px;
-	line-height: 30px;
+	line-height: 24px;
 	margin-top:0px;
 	padding-top:0px;
 	margin-bottom: 10px;
@@ -642,12 +628,12 @@ ul.gbox li a
 	overflow: hidden;
 }
 
-ul.gbox li.nofollow
+ul.gbox li.nofollow,ul.gbox li.follow:hover
 {
 	background: url( ../image/tt2.listen.gray.small.png ) no-repeat ;
 }
 
-ul.gbox li.follow
+ul.gbox li.follow,ul.gbox li.nofollow:hover
 {
 	background: url( ../image/tt2.listen.blue.small.png ) no-repeat ;
 }
@@ -678,7 +664,6 @@ ul.gbox li.star.private
 	background: url( ../image/tt2.star.red.small.png ) no-repeat ;
 }
 
-/*
 ul.gbox li.nostar.pub:hover
 {
 	background: url( ../image/tt2.star.blue.small.png ) no-repeat ;
@@ -693,7 +678,7 @@ ul.gbox li.star:hover
 {
 	background: url( ../image/tt2.star.gray.small.png ) no-repeat ;
 }
-*/
+
 
 
 
@@ -712,19 +697,16 @@ ul.gbox li.private
 	background: url( ../image/tt2.lock.red.small.png ) no-repeat ;
 }
 
-/*
-
 ul.gbox li.private:hover
 {
 	background: url( ../image/tt2.lock.gray.small.png ) no-repeat ;
-}*/
+}
 
 ul.gbox li.public
 {
 	background: url( ../image/tt2.lock.gray.small.png ) no-repeat ;
 }
 
-/*
 ul.gbox li.public:hover
 {
 	background: url( ../image/tt2.lock.red.small.png ) no-repeat ;
@@ -739,7 +721,6 @@ ul.gbox li.star.public:hover
 {
 	background: url( ../image/tt2.star.gray.small.png ) no-repeat ;
 }
-*/
 
 ul.gbox li.owner
 {
@@ -826,11 +807,6 @@ ul.history li,ul.fcomment li
 	margin-bottom: 5px;
 	font-size: 16px;
 	position: relative;
-	line-height: 180%;
-
-	white-space: wrap;
-	word-wrap: break-word;
-	word-break: break-all;
 }
 
 ul.history li a.close,ul.fcomment li a.close
@@ -939,7 +915,7 @@ ul#feed_list li.cast
 	padding-bottom:20px;
 	padding-left:20px;
 	font-size: 20px;
-	line-height: 30px;
+	line-height: 25px;
 }
 
 ul#feed_list li.more,ul#notice_list li.more
@@ -1255,31 +1231,11 @@ div.upgrade a.btn
 .im_history
 {
 	background: white;
-	height: 180px;
+	height: 200px;
 	max-height: 200px;
 	overflow: auto; 
 	position: relative;
 	width:318px;
-}
-
-#im_all_text_div
-{
-	background: white;
-	max-height: 200px;
-	overflow: auto; 
-	position: relative;
-	width:525px;
-}
-
-.im_history.large
-{
-	background: white;
-	height: auto;
-	overflow: auto; 
-	position: relative;
-	width:100%;
-	list-style:none;
-	display: inline-block;
 }
 
 .im_history .others
@@ -1369,35 +1325,10 @@ div.upgrade a.btn
 
 .im_divider
 {
-	background: #273342;
-	height:25px;
-	line-height: 25px;
-	padding-left:5px;
+	background: #e8e8e8;
+	height:5px;
 }
 
-.im_divider a
-{
-	color:white;
-	text-decoration: none;
-}
-
-#im_keyword
-{
-	width:325px;
-}
-
-.im_all_text
-{
-	height:400px;
-	overflow-y:scroll;
-	border:1px solid #ccc;
-	margin-bottom:10px; 
-}
-
-.im_form_textarea:focus 
-{
-	outline:none!important;
-}
 
 #im_box
 {
@@ -1758,39 +1689,6 @@ div.tagsinput div { display:block; float: left; }
 .table-install tr.bad
 {
 	color:red;
-}
-
-.todo_elink a
-{
-	margin-right:5px;
-} 
-
-.todo_elink
-{
-	margin-bottom: 5px;
-} 
-
-#to_top
-{
-	display: none;
-	position: fixed;
-	right:20px;
-	top:15px;
-	color:white;
-	z-index: 9999;
-	cursor: pointer;
-}
-
-#teamtoy_staff
-{
-	padding:20px;
-	background: black;
-	color: white;
-}
-
-#teamtoy_staff a
-{
-	color:white;
 }
 
 

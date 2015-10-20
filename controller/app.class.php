@@ -9,19 +9,13 @@ class appController extends coreController
 {
 	function __construct()
 	{
-		// 检测语言
-		if( isset($_COOKIE['tt2_lang']) ) $GLOBALS['i18n'] = z(t(basename($_COOKIE['tt2_lang'])));
-		else $GLOBALS['i18n'] = c('default_language');
-		__('TEST'); // force to load langua array before plugin
-
-
 		// 安装时不启用插件
 		if(g('c')!= 'install')
 		{
 			// 载入插件
 			$plugins = c('plugins');
 			
-			if( my_sql("SHOW COLUMNS FROM `plugin`") )
+			if( mysql_query("SHOW COLUMNS FROM `plugin`",db()) )
 			if($pinfos = get_data("SELECT * FROM `plugin`"))
 			{
 				foreach( $pinfos as $pinfo )
@@ -79,7 +73,7 @@ class appController extends coreController
 		}
 		else
 		{
-			if( !is_login() ) return info_page( __('NEED_LOGIN') );	
+			if( !is_login() ) return info_page('您访问的页面需要先<a href="?c=guest">登入</a>');	
 		}
 
 		

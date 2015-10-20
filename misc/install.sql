@@ -113,7 +113,7 @@ CREATE TABLE IF NOT EXISTS `message` (
   `from_delete` tinyint(1) NOT NULL DEFAULT '0',
   `to_delete` tinyint(1) NOT NULL DEFAULT '0',
   `timeline` datetime DEFAULT NULL,
-  `content` text NOT NULL,
+  `content` varchar(255) NOT NULL,
   `is_read` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
@@ -249,7 +249,7 @@ CREATE TABLE IF NOT EXISTS `user` (
   `eid` varchar(32) DEFAULT NULL COMMENT '员工号',
   `weibo` varchar(32) DEFAULT NULL,
   `desp` text,
-  `groups` varchar(255) DEFAULT NULL,
+  `groups` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`),
   UNIQUE KEY `email` (`email`),
