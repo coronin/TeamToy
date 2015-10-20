@@ -326,7 +326,12 @@ class apiController extends appController
             $_SESSION[ 'uname' ] = $user['name'];
             $_SESSION[ 'email' ] = $user[ 'email' ];
 			$_SESSION[ 'level' ] = $user['level'];
-
+			if( strlen( $user['groups'] ) > 0 )
+			{
+				$user['groups'] = explode('|', trim( $user['groups'] , '|' )) ;
+				$_SESSION[ 'groups' ] = $user['groups'];
+			} 
+							
 			if( c('api_check_new_verison') )
 				$this->check_new_verison( true );
 			
@@ -715,13 +720,13 @@ class apiController extends appController
 		
 		$uid = intval(v('uid'));
 
-		
+		$owner_uid=$uid>0?$uid:uid();
 		// 检查是否已经存在
-		$sql = "SELECT * FROM `todo` WHERE `content` = '" . s( $content ) . "' AND `owner_uid` = '" . intval(uid()) . "' LIMIT 1";
+		$sql = "SELECT * FROM `todo` WHERE `content` = '" . s( $content ) . "' AND `owner_uid` = '" . intval($owner_uid) . "' LIMIT 1";
 		
 		if( $todo = get_line($sql) )
 		{
-			if( get_var( "SELECT COUNT(*) FROM `todo_user` WHERE `tid` = '" . intval( $todo['id'] ) . "' AND `uid` = '" . intval( uid() ) . "' AND `status` != 3 " ) > 0 )
+			if( get_var( "SELECT COUNT(*) FROM `todo_user` WHERE `tid` = '" . intval( $todo['id'] ) . "' AND `uid` = '" . intval( $owner_uid ) . "' AND `status` != 3 " ) > 0 )
 			return self::send_error( LR_API_ARGS_ERROR , 'TODO EXISTS ' );
 			
 		}
@@ -893,12 +898,15 @@ class apiController extends appController
 				foreach( $ats as $at )
 				{
 					$at =z(t($at));
-					$gname = get_group_names();
-					if( in_array(strtoupper($at),$gname) )
+					if( $gname = get_group_names() )
 					{
-						if( $ndata = get_group_unames($at) )
-						foreach( $ndata as $nname )
-							$names[] = $nname;
+						if( in_array(strtoupper($at),$gname)  )
+						{
+							if( $ndata = get_group_unames($at) )
+							foreach( $ndata as $nname )
+								$names[] = $nname;
+
+						}else $names[] = $at;			
 					}
 					else
 					{
@@ -909,13 +917,7 @@ class apiController extends appController
 				foreach( $names as $at )
 				{
 					$at =z(t($at));
-					$gname = get_group_names();
-					if( in_array(strtoupper($at),$gname) )
-					{
-
-					}
-
-
+					
 					if( mb_strlen($at, 'UTF-8') < 2 ) continue;
 
 					$wsql[] = " `name` = '" . s(t($at)) . "' ";
@@ -1744,12 +1746,15 @@ class apiController extends appController
 					foreach( $ats as $at )
 					{
 						$at =z(t($at));
-						$gname = get_group_names();
-						if( in_array(strtoupper($at),$gname) )
+						if( $gname = get_group_names() )
 						{
-							if( $ndata = get_group_unames($at) )
-							foreach( $ndata as $nname )
-								$names[] = $nname;
+							if( in_array(strtoupper($at),$gname)  )
+							{
+								if( $ndata = get_group_unames($at) )
+								foreach( $ndata as $nname )
+									$names[] = $nname;
+
+							}else $names[] = $at;			
 						}
 						else
 						{
@@ -2102,12 +2107,15 @@ class apiController extends appController
 				foreach( $ats as $at )
 				{
 					$at =z(t($at));
-					$gname = get_group_names();
-					if( in_array(strtoupper($at),$gname) )
+					if( $gname = get_group_names() )
 					{
-						if( $ndata = get_group_unames($at) )
-						foreach( $ndata as $nname )
-							$names[] = $nname;
+						if( in_array(strtoupper($at),$gname)  )
+						{
+							if( $ndata = get_group_unames($at) )
+							foreach( $ndata as $nname )
+								$names[] = $nname;
+
+						}else $names[] = $at;			
 					}
 					else
 					{
