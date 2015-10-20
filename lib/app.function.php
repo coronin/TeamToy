@@ -5,6 +5,14 @@ if( !defined('SAE_TMP_PATH') )
     define('SAE_TMP_PATH', AROOT . DS . 'tmp' . DS );
 }
 
+function my_sql( $sql )
+{
+    if( function_exists('mysqli_connect') )
+        return mysqli_query( db() , $sql  );
+    else
+        return mysql_query( $sql , db()  ); 
+}
+
 function not_empty( $str )
 {
 	return strlen( $str ) > 0;
@@ -30,7 +38,7 @@ function is_online( $uid )
 function is_installed()
 {
     if( !db()) return false;
-    return mysql_query("SHOW COLUMNS FROM `user`",db());
+    return my_sql("SHOW COLUMNS FROM `user`");
 }
 
 function kset( $key , $value )
@@ -197,7 +205,7 @@ function rtime( $timeline )
 
 function rtime( $time = false, $limit = 86400, $format = null) 
 {
-	if( $format === null ) $format = __('DATE_SHORT_FORMAT');
+    if( $format === null ) $format = __('DATE_FULL_FORMAT'); // call, 2015-10-19, DATE_SHORT_FORMAT
 
     $time = strtotime($time);
 
