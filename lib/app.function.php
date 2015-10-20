@@ -337,7 +337,10 @@ function send_request( $action , $param , $token = null )
 
     if( (is_array( $param )) && (count($param) > 0) )
         foreach( $param as $key => $value )
+        {
             $_REQUEST[$key] =  $value ;
+        }
+            
 
     $api = new apiController();
     // magic call
@@ -734,7 +737,10 @@ function phpmailer_send_mail(  $to , $subject , $body , $from ,  $host , $port ,
     $mail->Port = $port;
     $mail->Username = $user;
     $mail->Password = $password;
-    $mail->SetFrom($from );
+    // cail
+    $mail->SMTPSecure = 'tls';
+    $mail->SetFrom($from, 'no-reply-todo');
+    // 2013-2-23
     $mail->AddReplyTo($from);
 
     $mail->Subject = $subject ;
@@ -752,11 +758,6 @@ function phpmailer_send_mail(  $to , $subject , $body , $from ,  $host , $port ,
         $mail->ClearAddresses();
         return true;
     }
-   
-
-
-    
-
 }
 
 
