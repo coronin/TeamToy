@@ -39,8 +39,19 @@
 	<li class="nostar pri"><a href="javascript:void(0);"><?=__('STAR')?></a></li>
 	<?php endif; ?>
 
-<?php endif; ?>	
-<?php endif; ?>	
+<?php endif; ?>
+<?php endif; ?>
+
+<!-- cail: 2015-10-20 -->
+<?php if( $data['owner_uid'] == uid() ): ?>
+ <span style="display:block;float:right;margin-top:5px;cursor:pointer;font-size:9px;
+ <?php if( intval($data['details']['status']) == 3 ): ?>
+  color:green;" onclick="mark_todo_undone('<?=$data['tid']?>');$(this).hide();"><?=__('REOPEN')?>
+ <?php else: ?>
+  color:red;" onclick="mark_todo_done('<?=$data['tid']?>');$(this).hide();"><?=__('FINISH')?>
+ <?php endif; ?></span>
+<?php endif; ?>
+<!-- cail: 2015-10-20 -->
 </ul>
 <script>bind_gbox( '<?=$data['tid']?>' );</script>
 <?php do_action( 'UI_TODO_DETAIL_ACTIONBOX_AFTER' , $data ); ?>

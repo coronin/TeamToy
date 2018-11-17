@@ -337,6 +337,7 @@ $GLOBALS['language']['us_en'] = array
 	'FOLLOWER' => 'Followers',
 
 	'FINISH' => 'Done',
+    'REOPEN' => 'Reopen',
 	'STAR' => 'Stared',
 	'PRIVATE' => 'Private',
 	'ASSIGN' => 'Assign',

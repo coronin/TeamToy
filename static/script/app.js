@@ -378,7 +378,8 @@ function todo_star( tid , type , is_public )
 					$("ul.gbox li.nostar").removeClass('nostar pub pri').addClass('star private');
 
 				$('#todo_list_star').prepend( $("#t-"+tid) );
-				bind_todo();
+$('.tid_'+tid).addClass('star');
+                bind_todo();
 				bind_gbox( tid );
 			}	
 			else
@@ -388,7 +389,8 @@ function todo_star( tid , type , is_public )
 				else
 					$("ul.gbox li.star").removeClass('public private star').addClass('nostar pri');
 				$('#todo_list_normal').prepend( $("#t-"+tid) );
-				bind_todo();
+$('.tid_'+tid).removeClass('star');
+                bind_todo();
 				bind_gbox( tid );
 
 			}
@@ -716,7 +718,8 @@ function mark_todo_done( tid )
 		if( data_obj.err_code == 0 )
 		{
 			$('#todo_list_done').prepend($('#t-'+tid));
-			bind_todo();
+$('.tid_'+tid).addClass('done');
+            bind_todo();
 		}
 		else
 		{
@@ -738,7 +741,8 @@ function mark_todo_undone( tid )
 		if( data_obj.err_code == 0 )
 		{
 			$('#todo_list_normal').prepend($('#t-'+tid));
-			bind_todo();
+$('.tid_'+tid).removeClass('done');
+            bind_todo();
 		}
 		else
 		{

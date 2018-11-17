@@ -335,6 +335,7 @@ $GLOBALS['language']['zh_tw'] = array
 'FOLLOWER' => '誰在關注',
 
 'FINISH' => '完成',
+'REOPEN' => '重起',
 'STAR' => '星標',
 'PRIVATE' => '私密',
 'ASSIGN' => '轉讓',

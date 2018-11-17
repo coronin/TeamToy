@@ -18,7 +18,7 @@ include_once( CROOT . 'lib' . DS . 'core.function.php' );
 
 include_once( CROOT . 'config' .  DS . 'core.config.php' );
 
-@include_once( AROOT . 'config' . DS . 'app.config.sample.php' );
+////@include_once( AROOT . 'config' . DS . 'app.config.sample.php' );
 @include_once( AROOT . 'config' . DS . 'app.config.php' );
 
 

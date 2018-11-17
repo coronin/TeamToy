@@ -20,7 +20,8 @@ function db( $host = null , $port = null , $user = null , $password = null , $db
 		if( $password == null ) $password = $db_config['db_password'];
 		if( $db_name == null ) $db_name = $db_config['db_name'];
 		
-		if( !$GLOBALS['LP_'.$db_key] = mysql_connect( $host.':'.$port , $user , $password , true ) )
+		////if( !$GLOBALS['LP_'.$db_key] = mysql_connect( $host.':'.$port , $user , $password , true ) )
+		if( !$GLOBALS['LP_'.$db_key] = mysqli_connect( $host.':'.$port , $user , $password , $db_name ) )
 		{
 			//
 			//echo 'can\'t connect to database';
@@ -28,20 +29,20 @@ function db( $host = null , $port = null , $user = null , $password = null , $db
 			$GLOBALS['LP_DB_CONNECT_ERROR_INFO'] = 'can\'t connect to database';
 			return false;
 		}
-		else
-		{
-			if( $db_name != '' )
-			{
-				if( !mysql_select_db( $db_name , $GLOBALS['LP_'.$db_key] ) )
-				{
-					//echo 'can\'t select database ' . $db_name ;
-					$GLOBALS['LP_DB_CONNECT_ERROR'] = true;
-					$GLOBALS['LP_DB_CONNECT_ERROR_INFO'] = 'can\'t select database ' . $db_name ;
-					return false;
-				}
-			}
-		}
-		
+		////else
+		////{
+		////	if( $db_name != '' )
+		////	{
+		////		if( !mysql_select_db( $db_name , $GLOBALS['LP_'.$db_key] ) )
+		////		{
+		////			//echo 'can\'t select database ' . $db_name ;
+		////			$GLOBALS['LP_DB_CONNECT_ERROR'] = true;
+		////			$GLOBALS['LP_DB_CONNECT_ERROR_INFO'] = 'can\'t select database ' . $db_name ;
+		////			return false;
+		////		}
+		////	}
+		////}
+
 		if(@mysql_query( "SET NAMES 'UTF8'" , $GLOBALS['LP_'.$db_key] ))
 		{
 			$GLOBALS['LP_DB_CONNECT_ERROR'] = false;

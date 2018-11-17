@@ -205,7 +205,7 @@ function rtime( $timeline )
 
 function rtime( $time = false, $limit = 86400, $format = null) 
 {
-	if( $format === null ) $format = __('DATE_SHORT_FORMAT');
+    if( $format === null ) $format = __('DATE_FULL_FORMAT'); // call, 2015-10-19, DATE_SHORT_FORMAT
 
     $time = strtotime($time);
 
@@ -803,7 +803,10 @@ function phpmailer_send_mail(  $to , $subject , $body , $from ,  $host , $port ,
     $mail->Port = $port;
     $mail->Username = $user;
     $mail->Password = $password;
-    $mail->SetFrom($from );
+    // cail
+    $mail->SMTPSecure = 'tls';
+    $mail->SetFrom($from, 'no-reply-todo');
+    // 2013-2-23
     $mail->AddReplyTo($from);
 
     $mail->Subject = $subject ;
@@ -822,11 +825,6 @@ function phpmailer_send_mail(  $to , $subject , $body , $from ,  $host , $port ,
         $mail->ClearAddresses();
         return true;
     }
-   
-
-
-    
-
 }
 
 
